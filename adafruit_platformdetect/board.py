@@ -186,7 +186,7 @@ class Board:
         elif chip_id == chips.RP2040_U2IF:
             board_id = self._rp2040_u2if_id()
         elif chip_id == chips.GENERIC_X86:
-            board_id = boards.GENERIC_LINUX_PC
+            board_id = self._steamdeck_id() or boards.GENERIC_LINUX_PC
         elif chip_id == chips.TDA4VM:
             board_id = self._beaglebone_id() or self._tisk_id()
         elif chip_id == chips.D1_RISCV:
@@ -482,6 +482,13 @@ class Board:
         board_value = self.detector.get_device_model()
         if "sun20iw1p1" in board_value:
             return boards.ALLWINER_D1
+        return None
+
+    def _steamdeck_id(self) -> Optional[str]:
+        """Try to detect the id for Valve's SteamDeck"""
+        board_value = self.detector.check_board_name_value()
+        if "jupiter" in board_value.lower():
+            return boards.STEAMDECK
         return None
 
     def _pine64_id(self) -> Optional[str]:
@@ -789,6 +796,11 @@ class Board:
         return self.id in boards._ONION_OMEGA_BOARD_IDS
 
     @property
+    def any_steamdeck_board(self) -> bool:
+        """Check whether the current board is a SteamDeck"""
+        return self.id == boards.STEAMDECK
+
+    @property
     def any_pine64_board(self) -> bool:
         """Check whether the current board is any Pine64 device."""
         return self.id in boards._PINE64_DEV_IDS
@@ -899,6 +911,7 @@ class Board:
             yield self.any_96boards
             yield self.any_sifive_board
             yield self.any_onion_omega_board
+            yield self.any_steamdeck_board
             yield self.any_pine64_board
             yield self.any_pynq_board
             yield self.any_rock_pi_board
